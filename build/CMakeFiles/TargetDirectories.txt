@@ -1,0 +1,3 @@
+/home/manaciel/Repo/SFML-Graph-Plotter/build/CMakeFiles/SFML-Graph-Plotter.dir
+/home/manaciel/Repo/SFML-Graph-Plotter/build/CMakeFiles/edit_cache.dir
+/home/manaciel/Repo/SFML-Graph-Plotter/build/CMakeFiles/rebuild_cache.dir

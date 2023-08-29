@@ -1,0 +1,2 @@
+#define SFML_Graph_Plotter_VERSION_MAJOR @SFML_Graph_Plotter_VERSION_MAJOR@
+#define SFML_Graph_Plotter_VERSION_MINOR @SFML_Graph_Plotter_VERSION_MINOR@
