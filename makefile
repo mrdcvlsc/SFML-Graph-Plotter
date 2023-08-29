@@ -1,5 +1,5 @@
 default:
-	$(MAKE) -C build && ./build/bin/SFML-Graph-Plotter
+	cmake --build build && ./build/SFML-Graph-Plotter
 
 style:
 	@echo fixing code format and code style...
