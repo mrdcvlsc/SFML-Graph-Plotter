@@ -1,0 +1,96 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    permissions: write-all
+
+    name: ${{ matrix.platform.name }} ${{ matrix.config.name }}
+    runs-on: ${{ matrix.platform.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+        - { name: Linux-Clang,    os: ubuntu-latest, outbin: ./build/SFML-Graph-Plotter, outzip: ubuntu-executable.zip , zipper: zip, flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ }
+        config:
+        - { name: Static, flags: -DBUILD_SHARED_LIBS=FALSE }
+
+    steps:
+    - name: Install Linux Dependencies
+      if: runner.os == 'Linux'
+      run: sudo apt-get update && sudo apt-get install libxrandr-dev libxcursor-dev libudev-dev libopenal-dev libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure
+      shell: bash
+      run: cmake -S . -B build -DCMAKE_INSTALL_PREFIX=install ${{matrix.platform.flags}} ${{matrix.config.flags}}
+
+    - name: Build
+      shell: bash
+      run: cmake --build build --config Release
+
+    - name: Zip Executable
+      shell: bash
+      run: ${{matrix.platform.zipper}} ${{matrix.platform.outzip}} ${{matrix.platform.outbin}}
+
+    - name: Create Release
+      run: |
+        echo "Creating a GitHub release..."
+        gh release create v0.0.1 ${{matrix.platform.outzip}} --title "v0.0.1" --notes "Release notes for v0.0.1" --draft=false --prerelease=false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # - name: Install
+    #   shell: bash
+    #   run: cmake --install build --config Release
+
+  build-others:
+    needs: build
+    permissions: write-all
+
+    name: ${{ matrix.platform.name }} ${{ matrix.config.name }}
+    runs-on: ${{ matrix.platform.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+        - { name: Windows-VS2019, os: windows-2019, outbin: .\\build\\Release\\SFML-Graph-Plotter.exe, outzip: windows-executable-VS19.zip, zipper: 7z a -tzip }
+        - { name: Windows-VS2022, os: windows-2022, outbin: .\\build\\Release\\SFML-Graph-Plotter.exe, outzip: windows-executable-VS22.zip, zipper: 7z a -tzip }
+        # - { name: Linux-GCC,      os: ubuntu-latest, outbin: ./build/SFML-Graph-Plotter, outzip: mac-executable.zip, zipper: zip }
+        - { name: MacOS-XCode,    os: macos-latest, outbin: ./build/SFML-Graph-Plotter, outzip: mac-executable.zip, zipper: zip }
+        config:
+        # - { name: Shared, flags: -DBUILD_SHARED_LIBS=TRUE }
+        - { name: Static, flags: -DBUILD_SHARED_LIBS=FALSE }
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure
+      shell: bash
+      run: cmake -S . -B build -DCMAKE_INSTALL_PREFIX=install ${{matrix.platform.flags}} ${{matrix.config.flags}}
+
+    - name: Build
+      shell: bash
+      run: cmake --build build --config Release
+
+    - name: Zip Executable
+      shell: bash
+      run: ${{matrix.platform.zipper}} ${{matrix.platform.outzip}} ${{matrix.platform.outbin}}
+
+    - name: Upload Other Executables To Release
+      run: |
+        echo "Add executables"
+        gh release upload v0.0.1 ${{matrix.platform.outzip}}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # - name: Install
+    #   shell: bash
+    #   run: cmake --install build --config Release
