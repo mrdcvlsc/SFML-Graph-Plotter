@@ -3,81 +3,82 @@
 #include <SFML/System/Vector2.hpp>
 #include <iostream>
 
-Grid::Grid(sf::Vector2f const &dimension, float pdpc, float vpc) : m_vertices(sf::Lines) {
-    reset(dimension, pdpc, vpc);
+Grid::Grid(sf::Vector2f const &dimension, float cell_size, float cell_unit) : grid_lines(sf::Lines) {
+    reset(dimension, cell_size, cell_unit);
 }
 
-bool Grid::reset(sf::Vector2f const &dimension, float pdpc, float vpc) {
-    this->pdpc = pdpc;
-    this->vpc = vpc;
+bool Grid::reset(sf::Vector2f const &dimension, float cell_size, float cell_unit) {
+    this->cell_size = cell_size;
+    this->cell_unit = cell_unit;
 
-    window_center = {dimension.x / 2.f, dimension.y / 2.f};
+    origin_point = {dimension.x / 2.f, dimension.y / 2.f};
 
-    m_vertices.clear();
+    grid_lines.clear();
 
     // x axis line
-    m_vertices.append({{0.f, window_center.y}, sf::Color::Red});
-    m_vertices.append({{dimension.x, window_center.y}, sf::Color::Red});
+    grid_lines.append({{0.f, origin_point.y}, sf::Color::Red});
+    grid_lines.append({{dimension.x, origin_point.y}, sf::Color::Red});
 
     // y axis line
-    m_vertices.append({{window_center.x, 0.f}, sf::Color::Blue});
-    m_vertices.append({{window_center.x, dimension.y}, sf::Color::Blue});
+    grid_lines.append({{origin_point.x, 0.f}, sf::Color::Blue});
+    grid_lines.append({{origin_point.x, dimension.y}, sf::Color::Blue});
 
     // y axis grid line from origin to the right
-    for (float x = window_center.x + pdpc; x < dimension.x; x += pdpc) {
-        m_vertices.append({{x, 0.f}, sf::Color(0xd3, 0xd3, 0xd3)});
-        m_vertices.append({{x, dimension.y}, sf::Color(0xd3, 0xd3, 0xd3)});
+    for (float x = origin_point.x + cell_size; x < dimension.x; x += cell_size) {
+        grid_lines.append({{x, 0.f}, sf::Color(0xd3, 0xd3, 0xd3)});
+        grid_lines.append({{x, dimension.y}, sf::Color(0xd3, 0xd3, 0xd3)});
     }
 
     // y axis grid line from origin to the left
-    for (float x = window_center.x - pdpc; x > 0.f; x -= pdpc) {
-        m_vertices.append({{x, 0.f}, sf::Color(0xd3, 0xd3, 0xd3)});
-        m_vertices.append({{x, dimension.y}, sf::Color(0xd3, 0xd3, 0xd3)});
+    for (float x = origin_point.x - cell_size; x > 0.f; x -= cell_size) {
+        grid_lines.append({{x, 0.f}, sf::Color(0xd3, 0xd3, 0xd3)});
+        grid_lines.append({{x, dimension.y}, sf::Color(0xd3, 0xd3, 0xd3)});
     }
 
     // x axis grid line from origin to the bottom
-    for (float y = window_center.y + pdpc; y < dimension.y; y += pdpc) {
-        m_vertices.append({{0.f, y}, sf::Color(0xd3, 0xd3, 0xd3)});
-        m_vertices.append({{dimension.x, y}, sf::Color(0xd3, 0xd3, 0xd3)});
+    for (float y = origin_point.y + cell_size; y < dimension.y; y += cell_size) {
+        grid_lines.append({{0.f, y}, sf::Color(0xd3, 0xd3, 0xd3)});
+        grid_lines.append({{dimension.x, y}, sf::Color(0xd3, 0xd3, 0xd3)});
     }
 
     // x axis grid line from origin to the top
-    for (float y = window_center.y - pdpc; y > 0.f; y -= pdpc) {
-        m_vertices.append({{0.f, y}, sf::Color(0xd3, 0xd3, 0xd3)});
-        m_vertices.append({{dimension.x, y}, sf::Color(0xd3, 0xd3, 0xd3)});
+    for (float y = origin_point.y - cell_size; y > 0.f; y -= cell_size) {
+        grid_lines.append({{0.f, y}, sf::Color(0xd3, 0xd3, 0xd3)});
+        grid_lines.append({{dimension.x, y}, sf::Color(0xd3, 0xd3, 0xd3)});
     }
 
-    setOrigin(window_center.x, window_center.y);
-    setPosition(window_center);
+    setOrigin(origin_point.x, origin_point.y);
+    setPosition(origin_point);
 
-    origin.setRadius(3.f);
-    origin.setPosition({window_center.x - origin.getRadius(), window_center.y - origin.getRadius()});
-    origin.setFillColor(sf::Color::Black);
+    origin_dot.setRadius(3.f);
+    origin_dot.setPosition({origin_point.x - origin_dot.getRadius(), origin_point.y - origin_dot.getRadius()});
+    origin_dot.setFillColor(sf::Color::Black);
 
     return true;
 }
 
 void Grid::applyTransform(sf::Transform const &transformation) {
-    for (std::size_t i = 0; i < m_vertices.getVertexCount(); ++i) {
-        sf::Vector2f transformedPosition = (getTransform() * transformation).transformPoint(m_vertices[i].position);
-        m_vertices[i].position = transformedPosition;
+    for (std::size_t i = 0; i < grid_lines.getVertexCount(); ++i) {
+        sf::Vector2f transformedPosition = (getTransform() * transformation).transformPoint(grid_lines[i].position);
+        grid_lines[i].position = transformedPosition;
     }
 
-    auto origin_trans_pos = (getTransform() * transformation).transformPoint(origin.getPosition());
-    origin.setPosition(origin_trans_pos.x - origin.getRadius(), origin_trans_pos.y - origin.getRadius());
+    auto origin_trans_pos = (getTransform() * transformation).transformPoint(origin_dot.getPosition());
+    origin_dot.setPosition(origin_trans_pos.x - origin_dot.getRadius(), origin_trans_pos.y - origin_dot.getRadius());
 
-    auto bound_center = m_vertices.getBounds();
+    auto bound_center = grid_lines.getBounds();
     setOrigin(bound_center.width / 2.f, bound_center.height / 2.f);
-    setPosition(window_center);
+    setPosition(origin_point);
 }
 
 void Grid::setTransform(sf::Transform const &transformation) {
-    reset(window_center * 2.f, pdpc, vpc);
+    reset(origin_point * 2.f, cell_size, cell_unit);
     applyTransform(transformation);
 }
 
 void Grid::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     states.transform *= getTransform();
-    target.draw(m_vertices, states);
-    target.draw(origin, states.transform);
+    target.draw(grid_lines, states);
+    target.draw(origin_dot, states);
+    target.draw(vectors, states);
 }

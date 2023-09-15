@@ -10,36 +10,57 @@
 #include <SFML/Graphics/Transform.hpp>
 #include <SFML/Graphics/Transformable.hpp>
 #include <SFML/Graphics/VertexArray.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <SFML/Window/Window.hpp>
 #include <iostream>
+#include <vector>
 
 class Grid : public sf::Sprite {
     public:
 
-    Grid(sf::Vector2f const &dimension, float pdpc, float vpc);
+    Grid(sf::Vector2f const &dimension, float cell_size, float cell_unit);
 
     /// \brief update the grid.
-    /// \param window an sfml window instance.
-    /// \param pdpc Pixel Dimension Per Cell, this is the size of the side of a
-    /// square on a cartesian plane. \param vpc Value Per Cell, this is the number
-    /// of units in one cell, if both pdpc and vpc is equal to 1 this would mean
-    /// one sqaure per one unit.
-    bool reset(sf::Vector2f const &dimension, float pdpc, float vpc);
+    /// \param dimension window instance dimension size.
+    /// \param cell_size this is the size of the side of a square on a cartesian plane.
+    /// \param cell_unit the number of units in one cell, if both cell_size and cell_unit is equal to 1 this would mean one sqaure per one unit.
+    bool reset(sf::Vector2f const &dimension, float cell_size, float cell_unit);
 
     void applyTransform(sf::Transform const &transformation);
     void setTransform(sf::Transform const &transformation);
 
-    sf::CircleShape origin;
+    void add_vector(sf::Vector2f const& vec, float x = 0.f, float y = 0.f);
 
     private:
 
     virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const;
 
-    sf::Vector2f    window_center;
-    sf::VertexArray m_vertices;
+    sf::Vector2f coords(sf::Vector2f const& coordinates) {
+        return {
+            (origin_point.x + coordinates.x) * cell_size,
+            (origin_point.y - coordinates.y) * cell_size
+        };
+    }
 
-    float pdpc;
-    float vpc;
+    sf::Vector2f coords(float x, float y) {
+        return {
+            (origin_point.x + x) * cell_size,
+            (origin_point.y - y) * cell_size
+        };
+    }
+
+    sf::Vector2f    origin_point;
+    sf::CircleShape origin_dot;
+
+    sf::VertexArray grid_lines;
+
+    sf::VertexArray vectors;
+
+    /// cell square side size.
+    float cell_size;
+
+    /// units per cell.
+    float cell_unit;
 };
 
 #endif
