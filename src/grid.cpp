@@ -1,9 +1,10 @@
 #include "../include/grid.hpp"
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/PrimitiveType.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <iostream>
 
-Grid::Grid(sf::Vector2f const &dimension, float cell_size, float cell_unit) : grid_lines(sf::Lines) {
+Grid::Grid(sf::Vector2f const &dimension, float cell_size, float cell_unit) : grid_lines(sf::Lines), vectors(sf::Lines) {
     reset(dimension, cell_size, cell_unit);
 }
 
@@ -81,4 +82,17 @@ void Grid::draw(sf::RenderTarget &target, sf::RenderStates states) const {
     target.draw(grid_lines, states);
     target.draw(origin_dot, states);
     target.draw(vectors, states);
+}
+
+void Grid::add_vector(sf::Vector2f const& vec, float x, float y) {
+    vectors.append({
+        coords(0.f, 0.f),
+        sf::Color::Black
+    });
+
+    vectors.append({
+        // {1.f, 1.f},
+        coords(50.f, 50.f),
+        sf::Color::Black
+    });
 }

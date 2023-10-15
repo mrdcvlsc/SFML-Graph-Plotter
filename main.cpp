@@ -28,6 +28,8 @@ int main() {
 
     // sf::Transform transformation(1.f, 0.f, 0.f, 0.2f, 1.f, 0.f, 0.f, 0.f, 1.f);
 
+    grid_original.add_vector({1.f, 1.f});
+
     while (window.isOpen()) {
         sf::Event events;
         while (window.pollEvent(events)) {

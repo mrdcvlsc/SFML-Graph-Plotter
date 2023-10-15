@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Linux Clang, os: ubuntu-latest, outbin: ./build/SFML-Graph-Plotter, outzip: ubuntu-executable.zip , zipper: zip, flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ }
+        - { name: Linux Clang, os: ubuntu-latest, bin: ./build/SFML-Graph-Plotter, zip: ubuntu-exec.zip , zipper: zip, flags: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ }
         config:
         - { name: Static, flags: -DBUILD_SHARED_LIBS=FALSE }
 
@@ -25,20 +25,23 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    - name: Display Tag Name
+      run : echo ${{github.ref_name}}
+
     - name: Configure project
       # shell: bash
       run: cmake -S . -B build -DCMAKE_INSTALL_PREFIX=install ${{matrix.platform.flags}} ${{matrix.config.flags}}
 
-    - name: Build ${{matrix.platform.outbin}} executable
+    - name: Build ${{matrix.platform.bin}} executable
       # shell: bash
       run: cmake --build build --config Release
 
-    - name: Compress ${{matrix.platform.outbin}} executable
+    - name: Compress ${{matrix.platform.bin}} executable
       # shell: bash
-      run: ${{matrix.platform.zipper}} ${{matrix.platform.outzip}} ${{matrix.platform.outbin}}
+      run: ${{matrix.platform.zipper}} ${{matrix.platform.zip}} ${{matrix.platform.bin}}
 
-    - name: Create github release and upload ${{matrix.platform.outzip}}
-      run: gh release create v0.0.1 ${{matrix.platform.outzip}} --title "v0.0.1" --notes "Release notes for v0.0.1" --draft=false --prerelease=false
+    - name: Create github release and upload ${{matrix.platform.zip}}
+      run: gh release create v0.0.1 ${{matrix.platform.zip}} --title "v0.0.1" --notes "Release notes for v0.0.1" --draft=false --prerelease=false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -57,13 +60,15 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows VS2019, os: windows-2019,  outbin: .\\build\\Release\\SFML-Graph-Plotter.exe, outzip: windows-executable-VS19.zip, zipper: 7z a -tzip }
-        - { name: Windows VS2022, os: windows-2022,  outbin: .\\build\\Release\\SFML-Graph-Plotter.exe, outzip: windows-executable-VS22.zip, zipper: 7z a -tzip }
-        - { name: MacOS XCode,    os: macos-latest,  outbin: ./build/SFML-Graph-Plotter,                outzip: mac-executable.zip,          zipper: zip }
-        # - { name: Linux GCC,      os: ubuntu-latest, outbin: ./build/SFML-Graph-Plotter,                outzip: mac-executable.zip,          zipper: zip }
+        - { name: Windows VS2019, os: windows-2019,   bin: .\\build\\Release\\SFML-Graph-Plotter.exe, zip: windows-exec-VS19.zip,  zipper: 7z a -tzip, flags: -DBUILD_SHARED_LIBS=FALSE -DCMAKE_BUILD_TYPE=Release }
+        - { name: Windows VS2022, os: windows-2022,   bin: .\\build\\Release\\SFML-Graph-Plotter.exe, zip: windows-exec-VS22.zip,  zipper: 7z a -tzip, flags: -DBUILD_SHARED_LIBS=FALSE -DCMAKE_BUILD_TYPE=Release }
+        - { name: Windows Clang,  os: windows-latest, bin: .\\build\\Release\\SFML-Graph-Plotter.exe, zip: windows-exec-clang.zip, zipper: 7z a -tzip, flags: -DBUILD_SHARED_LIBS=FALSE -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ }
+        - { name: Windows GCC,    os: windows-latest, bin: .\\build\\Release\\SFML-Graph-Plotter.exe, zip: windows-exec-gcc.zip, zipper: 7z a -tzip, flags: -DBUILD_SHARED_LIBS=FALSE -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ }
+        - { name: MacOS XCode,    os: macos-latest,   bin: ./build/SFML-Graph-Plotter,                zip: mac-exec.zip,           zipper: zip,        flags: -DBUILD_SHARED_LIBS=FALSE -DCMAKE_BUILD_TYPE=Release }
+        # - { name: Linux GCC,      os: ubuntu-latest,  bin: ./build/SFML-Graph-Plotter,                zip: mac-exec.zip,           zipper: zip,        flags: -DBUILD_SHARED_LIBS=FALSE -DCMAKE_BUILD_TYPE=Release }
         config:
-        - { name: Static, flags: -DBUILD_SHARED_LIBS=FALSE }
-        # - { name: Shared, flags: -DBUILD_SHARED_LIBS=TRUE }
+        - { name: Static, flags: -DBUILD_SHARED_LIBS=FALSE -DCMAKE_BUILD_TYPE=Release }
+        # - { name: Shared, flags: -DBUILD_SHARED_LIBS=TRUE -DCMAKE_BUILD_TYPE=Release }
 
     steps:
 
@@ -74,16 +79,16 @@ jobs:
       # shell: bash
       run: cmake -S . -B build -DCMAKE_INSTALL_PREFIX=install ${{matrix.platform.flags}} ${{matrix.config.flags}}
 
-    - name: Build ${{matrix.platform.outbin}} executable
+    - name: Build ${{matrix.platform.bin}} executable
       # shell: bash
       run: cmake --build build --config Release
 
-    - name: Compress ${{matrix.platform.outbin}} executable
+    - name: Compress ${{matrix.platform.bin}} executable
       # shell: bash
-      run: ${{matrix.platform.zipper}} ${{matrix.platform.outzip}} ${{matrix.platform.outbin}}
+      run: ${{matrix.platform.zipper}} ${{matrix.platform.zip}} ${{matrix.platform.bin}}
 
-    - name: Upload ${{matrix.platform.outzip}} to release
-      run: gh release upload v0.0.1 ${{matrix.platform.outzip}}
+    - name: Upload ${{matrix.platform.zip}} to release
+      run: gh release upload v0.0.1 ${{matrix.platform.zip}}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

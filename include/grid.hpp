@@ -37,15 +37,15 @@ class Grid : public sf::Sprite {
 
     sf::Vector2f coords(sf::Vector2f const& coordinates) {
         return {
-            (origin_point.x + coordinates.x) * cell_size,
-            (origin_point.y - coordinates.y) * cell_size
+            (origin_point.x + coordinates.x) * cell_size / cell_unit,
+            (origin_point.y - coordinates.y) * cell_size / cell_unit
         };
     }
 
     sf::Vector2f coords(float x, float y) {
         return {
-            (origin_point.x + x) * cell_size,
-            (origin_point.y - y) * cell_size
+            (origin_point.x + x) * cell_size / cell_unit,
+            (origin_point.y - y) * cell_size / cell_unit
         };
     }
 
