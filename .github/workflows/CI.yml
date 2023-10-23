@@ -38,19 +38,16 @@ jobs:
       run : echo ${{github.ref_name}}
 
     - name: Configure project
-      # shell: bash
       run: cmake -S . -B build -DCMAKE_INSTALL_PREFIX=install ${{matrix.platform.flags}} ${{matrix.config.flags}}
 
     - name: Build ${{matrix.platform.bin}} executable
-      # shell: bash
       run: cmake --build build --config Release
 
     - name: Compress ${{matrix.platform.bin}} executable
-      # shell: bash
       run: ${{matrix.platform.zipper}} ${{matrix.platform.zip}} ${{matrix.platform.bin}}
 
     - name: Create github release and upload ${{matrix.platform.zip}}
-      run: gh release create v0.0.1 ${{matrix.platform.zip}} --title "v0.0.1" --notes "Release notes for v0.0.1" --draft=false --prerelease=false
+      run: gh release create ${{github.ref_name}} ${{matrix.platform.zip}} --title "${{github.ref_name}}" --notes "Release notes for ${{github.ref_name}}" --draft=false --prerelease=false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -85,19 +82,16 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Configure project
-      # shell: bash
       run: cmake -S . -B build -DCMAKE_INSTALL_PREFIX=install ${{matrix.platform.flags}} ${{matrix.config.flags}}
 
     - name: Build ${{matrix.platform.bin}} executable
-      # shell: bash
       run: cmake --build build --config Release
 
     - name: Compress ${{matrix.platform.bin}} executable
-      # shell: bash
       run: ${{matrix.platform.zipper}} ${{matrix.platform.zip}} ${{matrix.platform.bin}}
 
     - name: Upload ${{matrix.platform.zip}} to release
-      run: gh release upload v0.0.1 ${{matrix.platform.zip}}
+      run: gh release upload ${{github.ref_name}} ${{matrix.platform.zip}}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
